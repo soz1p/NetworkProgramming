@@ -94,7 +94,7 @@ public class View extends JFrame {
     contentPane.add(btnStart);
     
     gameFrame = new GameFrame();
-    gameFrame.setBounds(400, 20, 550, 400); // 예시로 너비와 높이를 500으로 설정했습니다.
+    gameFrame.setBounds(385, 20, 590, 390); // 예시로 너비와 높이를 500으로 설정했습니다.
     contentPane.add(gameFrame);
    
 

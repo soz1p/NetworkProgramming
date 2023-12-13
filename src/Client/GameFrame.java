@@ -15,7 +15,7 @@ public class GameFrame extends JPanel {
         setBackground(Color.white);
 
         // 배경 이미지 로드
-        ImageIcon icon = new ImageIcon("/Users/sozip/eclipse-workspace/NPProject/src/images/background.png");
+        ImageIcon icon = new ImageIcon("/Users/sozip/NetworkProgramming/src/images/background.png");
         backgroundImage = icon.getImage();
     }
 
