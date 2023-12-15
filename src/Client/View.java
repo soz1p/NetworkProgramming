@@ -197,7 +197,6 @@ public class View extends JFrame {
 	                    JOptionPane.showMessageDialog(null, Playername + "님이(가) 우승했습니다.", "플레이어 우승", JOptionPane.WARNING_MESSAGE);  
 	                }
 	                else if (msg.startsWith("/dealer_stay")) {
-	                	String Playername = parts[1].split(":")[0].substring(1);
 	                    JOptionPane.showMessageDialog(null, "Dealer가 우승했습니다.", "Dealer 우승", JOptionPane.WARNING_MESSAGE);  
 	                }
 
