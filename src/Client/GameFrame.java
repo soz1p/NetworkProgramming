@@ -30,7 +30,7 @@ public class GameFrame extends JPanel {
         setBackground(Color.white);
 
         // 배경 이미지 로드
-        ImageIcon icon = new ImageIcon("/Users/maczoo/Desktop/jin/NetWorkProgramming/src/images/background.png");
+        ImageIcon icon = new ImageIcon("src/images/background.png");
         backgroundImage = icon.getImage();
 
         // JTextField 초기화 및 위치 설정
@@ -51,7 +51,7 @@ public class GameFrame extends JPanel {
         othersLabel.setForeground(Color.WHITE); // 텍스트 색상을 흰색으로 설정
         add(othersLabel);
        
-        ImageIcon backOfACardIcon = new ImageIcon("/Users/maczoo/Desktop/jin/NetWorkProgramming/src/images/backsideOfACard.jpg");
+        ImageIcon backOfACardIcon = new ImageIcon("src/images/backsideOfACard.jpg");
         backOfACard = backOfACardIcon.getImage();
     }
 

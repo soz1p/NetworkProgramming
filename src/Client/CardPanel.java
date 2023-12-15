@@ -61,7 +61,7 @@ public class CardPanel extends JPanel {
         }
 
         // 카드 이미지 파일의 경로를 리스트에 추가합니다.
-        cards.add(new String[] {"/Users/maczoo/Desktop/jin/NetWorkProgramming/src/images/" + suit + "_" + rank + ".jpg", String.valueOf(xPosition), String.valueOf(yPosition)});
+        cards.add(new String[] {"src/images/" + suit + "_" + rank + ".jpg", String.valueOf(xPosition), String.valueOf(yPosition)});
 
         // 패널을 다시 그리도록 repaint()를 호출합니다.
         repaint();
