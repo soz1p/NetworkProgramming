@@ -22,6 +22,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -147,6 +149,7 @@ public class Server extends JFrame {
     private String user_name = "";
     private int id;
     private Hand hand;
+    public HashMap<String, ArrayList<Card>> playerCards = new HashMap<>();
 
     public UserConnection(Socket client_socket, int user_id) {
       this.client_socket = client_socket;
@@ -303,67 +306,81 @@ public class Server extends JFrame {
     }
 
     public void get_cards_dealer() {
-      Card a = game.deck.deal();
-      Card b = game.deck.deal();
-      send_all("/new_dealer_card" + to_str());
-      print_server(to_str() + "/new_dealer_card " + a.to_str());
-      print_server(to_str() + "/new_dealer_card " + b.to_str());
-      this.hand = new Hand(a, b);
+        Card a = game.deck.deal();
+        Card b = game.deck.deal();
+        send_all("/new_dealer_card " + to_str() + " " + a.getSuit() + " " + a.getRank());
+        print_server(to_str() + "/new_dealer_card " + a.to_str());
+        print_server(to_str() + "/new_dealer_card " + b.to_str());
+
+        ArrayList<Card> dealerCards = new ArrayList<>();
+        dealerCards.add(a);
+        dealerCards.add(b);
+        playerCards.put("dealer", dealerCards);
+
+        this.hand = new Hand(a, b);
     }
 
     public void get_cards() {
-      Card a = game.deck.deal();
-      Card b = game.deck.deal();
-      send_all("/new_card " + to_str() + a.to_str());
-      send_all("/new_card " + to_str() + b.to_str());
-      print_server(to_str() + "/new_card " + a.to_str());
-      print_server(to_str() + "/new_card " + b.to_str());
-      this.hand = new Hand(a, b);
-      send_all("/total " + to_str() + hand.get_total());
+        Card a = game.deck.deal();
+        Card b = game.deck.deal();
+        send_all("/new_card " + to_str() + " " + a.getSuit() + " " + a.getRank());
+        send_all("/new_card " + to_str() + " " + b.getSuit() + " " + b.getRank());
+        print_server(to_str() + "/new_card " + a.to_str());
+        print_server(to_str() + "/new_card " + b.to_str());
+
+        ArrayList<Card> playerCardsList = new ArrayList<>();
+        playerCardsList.add(a);
+        playerCardsList.add(b);
+        playerCards.put(to_str(), playerCardsList);
+
+        this.hand = new Hand(a, b);
+        send_all("/total " + to_str() + hand.get_total());
     }
 
     public void hit() {
-      if (game.participants.contains(this.id)) {
-        if (this.hand.check_bust()) {
-          send_single("/err you are already busted");
-        } else {
-          if (this.hand.stay) {
-            send_single("/err you are already stayed");
-          } else {
-            if (this.id == game.dealer_id) {
-              // if user is dealer
-              if (game.player_count != 0) {
-                send_single("/err not your turn (now is player turn)");
-              } else {
-                Card a = game.deck.deal();
-                send_all("/new_dealer_card " + to_str() + a.to_str());
-                this.hand.hit(a);
-                send_all("/dealer_total " + to_str() + hand.get_total());
-                if (this.hand.check_bust()) {
-                  send_all("/dealer_bust " + to_str());
-                  check_result(-1);
-                }
-              }
+        if (game.participants.contains(this.id)) {
+            if (this.hand.check_bust()) {
+                send_single("/err you are already busted");
             } else {
-              // if user is player
-              Card a = game.deck.deal();
-              send_all("/new_card " + to_str() + a.to_str());
-              this.hand.hit(a);
-              send_all("/total " + to_str() + hand.get_total());
-              if (this.hand.check_bust()) {
-                send_all("/bust " + to_str());
-                game.player_count--;
-                if (game.player_count == 0) {
-                  send_all("/dealer_turn_start");
-                  dealer_turn_start();
+                if (this.hand.stay) {
+                    send_single("/err you are already stayed");
+                } else {
+                    if (this.id == game.dealer_id) {
+                        // if user is dealer
+                        if (game.player_count != 0) {
+                            send_single("/err not your turn (now is player turn)");
+                        } else {
+                            Card a = game.deck.deal();
+                            send_all("/new_dealer_card " + to_str() + " " + a.getSuit() + " " + a.getRank());
+                            playerCards.get("dealer").add(a);
+                            this.hand.hit(a);
+                            send_all("/dealer_total " + to_str() + hand.get_total());
+                            if (this.hand.check_bust()) {
+                                send_all("/dealer_bust " + to_str());
+                                check_result(-1);
+                            }
+                        }
+                    } else {
+                        // if user is player
+                        Card a = game.deck.deal();
+                        send_all("/new_card " + to_str() + " " + a.getSuit() + " " + a.getRank());
+                        playerCards.get(to_str()).add(a);
+                        this.hand.hit(a);
+                        send_all("/total " + to_str() + hand.get_total());
+                        if (this.hand.check_bust()) {
+                            send_all("/bust " + to_str());
+                            game.player_count--;
+                            if (game.player_count == 0) {
+                                send_all("/dealer_turn_start");
+                                dealer_turn_start();
+                            }
+                        }
+                    }
                 }
-              }
             }
-          }
+        } else {
+            send_single("/err you are not joined to game");
         }
-      } else {
-        send_single("/err you are not joined to game");
-      }
     }
 
     public void stay() {
@@ -404,7 +421,6 @@ public class Server extends JFrame {
     }
 
     public void dealer_turn_start() {
-      send_all("/dealer_card_open " + game.deck.deck[0].to_str());
       send_all("/dealer_card_open " + game.deck.deck[1].to_str());
     }
 

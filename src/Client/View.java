@@ -12,6 +12,8 @@ import java.net.Socket;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -38,6 +40,8 @@ public class View extends JFrame {
   private JButton btnJoin;
   private JButton btnStart;
   private GameFrame gameFrame;
+  private CardPanel cardPanel;
+  private JLayeredPane layeredPane;
 
   /**
    * Create the frame.
@@ -93,10 +97,18 @@ public class View extends JFrame {
     btnStart.setBounds(920, 10, 76, 40);
     contentPane.add(btnStart);
     
+    layeredPane = new JLayeredPane();
+    layeredPane.setBounds(385, 20, 590, 390);
+    contentPane.add(layeredPane);
+    
     gameFrame = new GameFrame();
-    gameFrame.setBounds(385, 20, 590, 390); // 예시로 너비와 높이를 500으로 설정했습니다.
-    contentPane.add(gameFrame);
-   
+    gameFrame.setBounds(0, 0, 590, 390);
+    layeredPane.add(gameFrame, JLayeredPane.DEFAULT_LAYER);
+
+    cardPanel = new CardPanel(username);
+    cardPanel.setBounds(0, 0, 590, 390);
+    layeredPane.add(cardPanel, JLayeredPane.PALETTE_LAYER);
+    
 
     AppendText("User " + username + " connecting " + ip_addr + " " + port_no + "\n");
     UserName = username;
@@ -129,26 +141,81 @@ public class View extends JFrame {
 
   // Server Message를 수신해서 화면에 표시
   class ListenNetwork extends Thread {
-    public void run() {
-      while (true) {
-        try {
-          // Use readUTF to read messages
-          String msg = dis.readUTF();
-          AppendText(msg);
-        } catch (IOException e) {
-          AppendText("dis.read() error");
-          try {
-            dos.close();
-            dis.close();
-            socket.close();
-            break;
-          } catch (Exception ee) {
-            break;
-          }
-        }
-      }
-    }
-  }
+	    public void run() {
+	        while (true) {
+	            try {
+	                // Use readUTF to read messages
+	                String msg = dis.readUTF();
+	                AppendText(msg);
+	                
+	                // 카드 정보 처리 로직 추가
+	                String[] parts = msg.split(" ");
+
+	                // 첫 번째 부분은 명령어입니다.
+	                String command = parts[0];
+
+	                if (command.equals("/new_dealer_card")) {
+	                    // 두 번째 부분은 플레이어의 ID입니다.
+	                    // 세 번째 부분은 카드의 무늬입니다.
+	                    // 네 번째 부분은 카드의 숫자입니다.
+	                    String playerId = parts[1];
+	                    String suit = parts[2];
+	                    String rank = parts[3].trim();
+
+	                    // 카드를 화면에 그립니다.
+	                    cardPanel.drawCard("dealer", suit, rank);
+	                }else if (command.equals("/new_card")) {
+	                    // 두 번째 부분은 플레이어의 ID입니다.
+	                    // 세 번째 부분은 카드의 무늬입니다.
+	                    // 네 번째 부분은 카드의 숫자입니다.
+	                    String playerId = parts[1];
+	                    String suit = parts[2];
+	                    String rank = parts[3].trim();;
+
+	                    // 카드를 화면에 그립니다.
+	                    cardPanel.drawCard(playerId, suit, rank);
+	                } else if (command.equals("/dealer_card_open")) {
+	                    // 두 번째 부분은 플레이어의 ID입니다.
+	                    // 세 번째 부분은 카드의 무늬입니다.
+	                    // 네 번째 부분은 카드의 숫자입니다.
+	                    String suit = parts[1];
+	                    String of = parts[2];
+	                    String rank = parts[3].trim();;
+
+	                    // 카드를 화면에 그립니다.
+	                    cardPanel.drawCard("dealer", suit, rank);
+	                } else if (msg.startsWith("/game_end")) {
+	                    JOptionPane.showMessageDialog(null, "게임이 종료되었습니다. 다시 게임을 하신다면 Join 버튼을 눌러주세요.", "게임 종료", JOptionPane.WARNING_MESSAGE);
+	                    cardPanel.reset(); // 카드 패널을 초기화합니다.
+	                }
+	                else if (msg.startsWith("/bust")) {
+	                	String Playername = parts[1].split(":")[0].substring(1);
+	                    JOptionPane.showMessageDialog(null, Playername + "님이(가) 파산했습니다.", "플레이어 파산", JOptionPane.WARNING_MESSAGE);  
+	                }
+	                else if (msg.startsWith("/game_win")) {
+	                	String Playername = parts[1].split(":")[0].substring(1);
+	                    JOptionPane.showMessageDialog(null, Playername + "님이(가) 우승했습니다.", "플레이어 우승", JOptionPane.WARNING_MESSAGE);  
+	                }
+	                else if (msg.startsWith("/dealer_stay")) {
+	                	String Playername = parts[1].split(":")[0].substring(1);
+	                    JOptionPane.showMessageDialog(null, "Dealer가 우승했습니다.", "Dealer 우승", JOptionPane.WARNING_MESSAGE);  
+	                }
+
+	            } catch (IOException e) {
+	                AppendText("dis.read() error");
+	                try {
+	                    dos.close();
+	                    dis.close();
+	                    socket.close();
+	                    break;
+	                } catch (Exception ee) {
+	                    break;
+	                }
+	            }
+	        }
+	    }
+	}
+
 
   // keyboard enter key 치면 서버로 전송
   class Myaction implements ActionListener // 내부클래스로 액션 이벤트 처리 클래스

@@ -11,12 +11,12 @@ public class Deck {
 
   /// create new Deck
   public Deck() {
-    String[] rank = { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
+    String[] rank = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" };
     String[] suit = {
-        "Heart",
-        "Spade",
-        "Diamond",
-        "Club",
+        "Hearts",
+        "Spades",
+        "Diamonds",
+        "Clubs",
     };
 
     deck = new Card[CARDS_LEN];
@@ -43,21 +43,6 @@ public class Deck {
   /// deal one card
   public Card deal() {
     return deck[counter++];
-  }
-
-}
-
-class Card {
-  public String rank;
-  public String suit;
-
-  public Card(String card_val, String suit) {
-    this.rank = card_val;
-    this.suit = suit;
-  }
-
-  public String to_str() {
-    return this.suit + "," + this.rank;
   }
 
 }
